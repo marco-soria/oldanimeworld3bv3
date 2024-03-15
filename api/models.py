@@ -25,10 +25,11 @@ class Product(models.Model):
     product_description = models.TextField(null=True,verbose_name='Description')
     product_image = CloudinaryField('image',default='')
     product_price = models.DecimalField(max_digits=10,decimal_places=2,default=0,verbose_name='Price',validators=[MinValueValidator(0)])
-    product_category_id = models.ForeignKey(Category,related_name='Products',
+    product_registerdate = models.DateTimeField(auto_now=True)
+    category_id = models.ForeignKey(Category,related_name='Products',
                                     to_field='category_id',on_delete=models.RESTRICT,
                                     db_column='category_id',verbose_name='Category')
-    product_registerdate = models.DateTimeField(auto_now=True)
+    
 
     class Meta:
         db_table = 'tbl_product'
@@ -47,6 +48,7 @@ def generate_sku(sender,instance,created,**kwargs):
 from django.contrib.auth.models import User
 
 class Client(models.Model):
+    client_id = models.AutoField(primary_key=True)
     user = models.OneToOneField(User,on_delete=models.RESTRICT)
     client_name = models.CharField(max_length=255)
     client_dni = models.CharField(max_length=8)
@@ -70,11 +72,13 @@ class Order(models.Model):
         ('1','Payed')
     )
     
-    order_client = models.ForeignKey(Client,on_delete=models.RESTRICT)
+    order_id = models.AutoField(primary_key=True)
     order_registerdate = models.DateTimeField(auto_now=True)
     order_number = models.CharField(max_length=20,null=True)
     order_total = models.DecimalField(max_digits=10,decimal_places=2,default=0)
     order_state = models.CharField(max_length=1,default='0',choices=STATE_CHOICES)
+    client_id = models.ForeignKey(Client,on_delete=models.RESTRICT)
+    
     
     class Meta:
         db_table = 'tbl_order'
@@ -83,10 +87,12 @@ class Order(models.Model):
         return self.order_number
     
 class OrderDetail(models.Model):
-    orderdetail_order = models.ForeignKey(Order,on_delete=models.RESTRICT)
-    orderdetail_product = models.ForeignKey(Product,on_delete=models.RESTRICT)
+    orderdetail_id = models.AutoField(primary_key=True)
     orderdetail_quantity = models.IntegerField(default=1, validators=[MinValueValidator(0)])
     orderdetail_subtotal = models.DecimalField(max_digits=10,decimal_places=2)
+    order_id = models.ForeignKey(Order,on_delete=models.RESTRICT)
+    product_id = models.ForeignKey(Product,on_delete=models.RESTRICT)
+    
     
     class Meta:
         db_table = 'tbl_orderdetail'
